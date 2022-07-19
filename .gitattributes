@@ -1,0 +1,2 @@
+# Declare all *.rs files will have the same line ending style
+*.rs text eol=lf

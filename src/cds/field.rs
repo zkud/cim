@@ -4,6 +4,7 @@ use xml::attribute::OwnedAttribute;
 
 #[derive(Clone)]
 pub struct Field {
+  is_key: bool,
   name: String,
   cds_type: CDSType,
 }
@@ -16,12 +17,33 @@ impl Field {
     )
   }
 
+  pub fn new_association(name: &str, target: &str) -> Self {
+    Field::new(
+      name.to_owned(),
+      CDSType::Association {
+        target: target.to_owned(),
+      },
+    )
+  }
+
   fn new(name: String, cds_type: CDSType) -> Self {
-    Field { name, cds_type }
+    Field {
+      name,
+      cds_type,
+      is_key: false,
+    }
   }
 
   pub fn to_cds(&self) -> String {
-    format!("{}: {};\n", self.name, self.cds_type)
+    if self.is_key {
+      format!("key {}: {};\n", self.name, self.cds_type)
+    } else {
+      format!("{}: {};\n", self.name, self.cds_type)
+    }
+  }
+
+  pub fn set_as_key(&mut self) {
+    self.is_key = true;
   }
 }
 
@@ -38,6 +60,11 @@ enum CDSType {
   DateTime,
   String { length: Option<String> },
   Binary,
+  Single,
+  Byte,
+  SByte,
+  Stream,
+  Association { target: String },
 }
 
 impl Display for CDSType {
@@ -57,6 +84,11 @@ impl Display for CDSType {
         None => format!("String"),
       },
       CDSType::Binary => String::from("Binary"),
+      CDSType::Single => String::from("Double @odata.Type: 'Edm.Single'"),
+      CDSType::Byte => String::from("Integer @odata.Type: 'Edm.Byte'"),
+      CDSType::SByte => String::from("Integer @odata.Type: 'Edm.SByte'"),
+      CDSType::Stream => String::from("LargeBinary @odata.Type: 'Edm.Stream'"),
+      CDSType::Association { target } => format!("Association to {target} on ..."),
     };
 
     write!(fmt, "{}", type_string)
@@ -87,7 +119,11 @@ impl CDSType {
         Self::String { length }
       }
       "Edm.Binary" => Self::Binary,
-      _ => panic!("Unknown/Unsupported OData Type"),
+      "Edm.Single" => Self::Single,
+      "Edm.Byte" => Self::Byte,
+      "Edm.SByte" => Self::SByte,
+      "Edm.Stream" => Self::Stream,
+      _ => panic!("Unknown/Unsupported OData Type '{odata_type}'"),
     }
   }
 }
