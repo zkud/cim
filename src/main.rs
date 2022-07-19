@@ -9,7 +9,7 @@ fn main() {
   if args.len() < 2 {
     println!("CIM 0.2.0");
     println!("CDS Implementation generation by a Metadata document");
-    println!("Incorrect usage path arg is missing, try cim <filename> instead");
+    println!("Incorrect usage, path arg is missing, try cim <filename> instead");
     return;
   }
   let filename = &args[1];
