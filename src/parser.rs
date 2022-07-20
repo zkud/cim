@@ -42,8 +42,9 @@ pub fn parse(filename: &str) -> String {
         "NavigationProperty" => {
           field_name =
             get_attribute(&attributes, "Name").expect("Failed to get nav. property's name");
-          associated_target =
-            get_attribute(&attributes, "Type").expect("Failed to get nav. property's target");
+          associated_target = get_attribute(&attributes, "Type")
+            .or(get_attribute(&attributes, "ToRole"))
+            .expect("Failed to get nav. property's target");
           if schema_name.len() > 0 {
             associated_target = associated_target.replace(&(schema_name.clone() + "."), "");
           }
