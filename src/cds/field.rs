@@ -104,7 +104,9 @@ impl CDSType {
       "Edm.Int64" => Self::Integer64,
       "Edm.Decimal" => {
         let scale = get_attribute(&attributes, "scale");
+        let scale = scale.or(get_attribute(&attributes, "Scale"));
         let precision = get_attribute(&attributes, "precision");
+        let precision = precision.or(get_attribute(&attributes, "Precision"));
         match (scale, precision) {
           (Some(scale), Some(precision)) => Self::Decimal { scale, precision },
           _ => panic!("Failed to parse a Decimal type, scale or precision is missing"),
