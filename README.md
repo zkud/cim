@@ -1,5 +1,7 @@
 # **C**DS **I**mplementation generation by a **M**etadata document
 
+[![CI](https://github.com/zkud/cim/actions/workflows/ci.yml/badge.svg)](https://github.com/zkud/cim/actions/workflows/ci.yml)
+
 This is a simle CLI program to generate KISS CAP CDS implementations from OData (both v2 and v4 are supported) Metadata documents.
 
 ```console
