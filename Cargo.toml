@@ -1,7 +1,14 @@
 [package]
 name = "cim"
-version = "0.2.2"
+description = "CDS Implementation generation by a Metadata document"
+version = "0.2.3"
 edition = "2021"
+authors = ["zkud <anton.kudyrka@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/zkud/cim"
+keywords = ["CDS", "OData v2", "OData v4", "Metadata"]
+readme = "README.md"
 
 [dependencies]
 xml-rs = "0.8"
+clap = {version="3.2", features=["derive"]}

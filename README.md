@@ -6,7 +6,7 @@ This is a simle CLI program to generate KISS CAP CDS implementations from OData 
 
 ```console
 foo@bar:~$ cim metadata.xml
-CIM 0.2.2
+CIM 0.2.3
 Reading metadata.xml...
 entity ProjectElemDetail {
   ObjectID: String;
@@ -30,7 +30,7 @@ entity RelationshipDetail {
 
 ## Installation
 
-To use a tool compile the project on your local machine from sources and install with ```cargo install```, then use where it suits :).
+To use a tool compile the project on your local machine from sources and install with ```cargo install``` (```cargo install --path .```), then use where it suits :).
 
 ## License
 
