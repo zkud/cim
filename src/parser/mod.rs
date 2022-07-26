@@ -47,72 +47,17 @@ impl Parser {
         Ok(XmlEvent::StartElement {
           name, attributes, ..
         }) => match name.local_name.as_ref() {
-          "Schema" => {
-            self.schema_name =
-              get_attribute(&attributes, "Namespace").expect("Failed to get schemas's namespace");
-          }
-          "EntityType" => {
-            self.entity_name =
-              get_attribute(&attributes, "Name").expect("Failed to get entity's name");
-          }
-          "Property" => {
-            self.field_name =
-              get_attribute(&attributes, "Name").expect("Failed to get property's name");
-            self.field_type =
-              get_attribute(&attributes, "Type").expect("Failed to get property's type");
-            self.field_attributes = attributes.clone();
-          }
-          "NavigationProperty" => {
-            self.field_name =
-              get_attribute(&attributes, "Name").expect("Failed to get nav. property's name");
-            self.associated_target = get_attribute(&attributes, "Type")
-              .or(get_attribute(&attributes, "ToRole"))
-              .expect("Failed to get nav. property's target");
-            if self.schema_name.len() > 0 {
-              self.associated_target = self
-                .associated_target
-                .replace(&(self.schema_name.clone() + "."), "");
-            }
-            self.associated_target = self.associated_target.replace("Collection(", "");
-            self.associated_target = self.associated_target.replace(")", "");
-          }
-          "PropertyRef" => {
-            let field_name =
-              get_attribute(&attributes, "Name").expect("Failed to get property ref's name");
-            self.keys.push(field_name);
-          }
+          "Schema" => self.on_schema_start(&attributes),
+          "EntityType" => self.on_entity_start(&attributes),
+          "Property" => self.on_property_start(&attributes),
+          "NavigationProperty" => self.on_navigation_property_start(&attributes),
+          "PropertyRef" => self.on_property_ref(attributes),
           _ => (),
         },
         Ok(XmlEvent::EndElement { name }) => match name.local_name.as_ref() {
-          "EntityType" => {
-            for key in self.keys.iter() {
-              self
-                .fields
-                .get_mut(key)
-                .expect("Unknown property in property ref")
-                .set_as_key()
-            }
-            let entity_fields = self.fields.clone().into_values().collect();
-            let entity = Entity::new(&self.entity_name, &entity_fields);
-            self.keys.clear();
-            self.finished_entities.push(entity);
-            self.entity_name.clear();
-            self.fields.clear();
-          }
-          "Property" => {
-            let field =
-              Field::from_odata(&self.field_name, &self.field_type, &self.field_attributes);
-            self.fields.insert(self.field_name.clone(), field);
-            self.field_name.clear();
-            self.field_type.clear();
-            self.field_attributes.clear();
-          }
-          "NavigationProperty" => {
-            let field = Field::new_association(&self.field_name, &self.associated_target);
-            self.fields.insert(self.field_name.clone(), field);
-            self.associated_target.clear();
-            self.field_name.clear();
-          }
+          "EntityType" => self.on_entity_close(),
+          "Property" => self.on_property_close(),
+          "NavigationProperty" => self.on_navigation_property_close(),
           _ => (),
         },
         Err(e) => {
@@ -122,6 +67,76 @@ impl Parser {
       }
     }
 
+    self.compose_cds_string()
+  }
+
+  fn on_schema_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+    self.schema_name =
+      get_attribute(&attributes, "Namespace").expect("Failed to get schemas's namespace");
+  }
+
+  fn on_entity_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+    self.entity_name = get_attribute(&attributes, "Name").expect("Failed to get entity's name");
+  }
+
+  fn on_property_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+    self.field_name = get_attribute(&attributes, "Name").expect("Failed to get property's name");
+    self.field_type = get_attribute(&attributes, "Type").expect("Failed to get property's type");
+    self.field_attributes = attributes.clone();
+  }
+
+  fn on_navigation_property_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+    self.field_name =
+      get_attribute(&attributes, "Name").expect("Failed to get nav. property's name");
+    self.associated_target = get_attribute(&attributes, "Type")
+      .or(get_attribute(&attributes, "ToRole"))
+      .expect("Failed to get nav. property's target");
+    if self.schema_name.len() > 0 {
+      self.associated_target = self
+        .associated_target
+        .replace(&(self.schema_name.clone() + "."), "");
+    }
+    self.associated_target = self.associated_target.replace("Collection(", "");
+    self.associated_target = self.associated_target.replace(")", "");
+  }
+
+  fn on_property_ref(&mut self, attributes: Vec<OwnedAttribute>) {
+    let field_name = get_attribute(&attributes, "Name").expect("Failed to get property ref's name");
+    self.keys.push(field_name);
+  }
+
+  fn on_entity_close(&mut self) {
+    for key in self.keys.iter() {
+      self
+        .fields
+        .get_mut(key)
+        .expect("Unknown property in property ref")
+        .set_as_key()
+    }
+    let entity_fields = self.fields.clone().into_values().collect();
+    let entity = Entity::new(&self.entity_name, &entity_fields);
+    self.keys.clear();
+    self.finished_entities.push(entity);
+    self.entity_name.clear();
+    self.fields.clear();
+  }
+
+  fn on_property_close(&mut self) {
+    let field = Field::from_odata(&self.field_name, &self.field_type, &self.field_attributes);
+    self.fields.insert(self.field_name.clone(), field);
+    self.field_name.clear();
+    self.field_type.clear();
+    self.field_attributes.clear();
+  }
+
+  fn on_navigation_property_close(&mut self) {
+    let field = Field::new_association(&self.field_name, &self.associated_target);
+    self.fields.insert(self.field_name.clone(), field);
+    self.associated_target.clear();
+    self.field_name.clear();
+  }
+
+  fn compose_cds_string(&self) -> String {
     let mut cds = String::from("");
     for entity in self.finished_entities.iter() {
       cds.push_str(&entity.to_cds());
