@@ -1,6 +1,9 @@
-use super::cds::entity::Entity;
-use super::cds::field::Field;
-use super::util::get_attribute;
+mod cds;
+mod util;
+
+use util::get_attribute;
+use cds::entity::Entity;
+use cds::field::Field;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
