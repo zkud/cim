@@ -20,7 +20,6 @@ pub enum Tag {
   Property,
   NavigationProperty,
   PropertyRef,
-  Unknown
 }
 
 #[derive(fmt::Debug, Clone, Hash, PartialEq, Eq)]

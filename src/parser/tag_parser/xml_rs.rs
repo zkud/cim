@@ -21,8 +21,12 @@ impl Iterator for XmlTagParser {
       match self.tag_parser.next() {
         Some(Ok(XmlEvent::StartElement {
           name, attributes, ..
-        })) => return Some(Ok(Self::build_open_tag_event(name.local_name, &attributes))),
-        Some(Ok(XmlEvent::EndElement { name })) => {
+        }))
+          if Self::is_supported_tag(&name.local_name) =>
+        {
+          return Some(Ok(Self::build_open_tag_event(name.local_name, &attributes)))
+        }
+        Some(Ok(XmlEvent::EndElement { name })) if Self::is_supported_tag(&name.local_name) => {
           return Some(Ok(Self::build_close_tag_event(name.local_name)))
         }
         Some(Err(e)) => return Some(Err(TagError::new(e.msg()))),
@@ -47,10 +51,7 @@ impl XmlTagParser {
   fn build_open_tag_event(name: String, attributes: &Vec<OwnedAttribute>) -> TagEvent {
     let tag = Self::build_tag(name);
     let attributes = Self::parse_attributes(attributes);
-    TagEvent::Open {
-      tag,
-      attributes,
-    }
+    TagEvent::Open { tag, attributes }
   }
 
   fn parse_attributes(attributes: &Vec<OwnedAttribute>) -> HashMap<String, String> {
@@ -74,8 +75,15 @@ impl XmlTagParser {
       "EntityType" => Tag::EntityType,
       "Property" => Tag::Property,
       "NavigationProperty" => Tag::NavigationProperty,
-      "PropertyRef" => Tag::PropertyRef,
-      _ => Tag::Unknown,
+      _ => Tag::PropertyRef,
     }
+  }
+
+  fn is_supported_tag(name: &str) -> bool {
+    return name == "Schema"
+      || name == "EntityType"
+      || name == "Property"
+      || name == "PropertyRef"
+      || name == "NavigationProperty";
   }
 }

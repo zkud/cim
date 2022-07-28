@@ -49,7 +49,6 @@ impl Parser {
             Tag::Property => self.on_property_start(&attributes),
             Tag::NavigationProperty => self.on_navigation_property_start(&attributes),
             Tag::PropertyRef => self.on_property_ref(attributes),
-            _ => ()
           },
           Ok(TagEvent::Close { tag }) => match tag {
             Tag::EntityType => self.on_entity_close(),
