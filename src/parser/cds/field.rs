@@ -1,6 +1,6 @@
 use super::super::util::get_attribute;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Result};
-use xml::attribute::OwnedAttribute;
 
 #[derive(Clone)]
 pub struct Field {
@@ -10,7 +10,7 @@ pub struct Field {
 }
 
 impl Field {
-  pub fn from_odata(name: &str, odata_type: &str, attributes: &Vec<OwnedAttribute>) -> Self {
+  pub fn from_odata(name: &str, odata_type: &str, attributes: &HashMap<String, String>) -> Self {
     Field::new(
       name.to_owned(),
       CDSType::from_odata(odata_type.to_owned(), attributes),
@@ -96,7 +96,7 @@ impl Display for CDSType {
 }
 
 impl CDSType {
-  fn from_odata(odata_type: String, attributes: &Vec<OwnedAttribute>) -> Self {
+  fn from_odata(odata_type: String, attributes: &HashMap<String, String>) -> Self {
     match odata_type.as_str() {
       "Edm.Guid" => Self::UUID,
       "Edm.Boolean" => Self::Boolean,

@@ -1,15 +1,14 @@
 mod cds;
+pub mod tag_parser;
 mod util;
 
 use cds::entity::Entity;
 use cds::field::Field;
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufReader;
+use tag_parser::types::Tag;
+use tag_parser::types::TagEvent;
+use tag_parser::types::TagParser;
 use util::get_attribute;
-
-use xml::attribute::OwnedAttribute;
-use xml::reader::{EventReader, XmlEvent};
 
 pub struct Parser {
   finished_entities: Vec<Entity>,
@@ -19,13 +18,13 @@ pub struct Parser {
   field_name: String,
   field_type: String,
   associated_target: String,
-  field_attributes: Vec<OwnedAttribute>,
+  field_attributes: HashMap<String, String>,
   schema_name: String,
-  tag_parser: Option<EventReader<BufReader<File>>>,
+  tag_parser: Option<Box<dyn TagParser>>,
 }
 
 impl Parser {
-  pub fn new(tag_parser: EventReader<BufReader<File>>) -> Parser {
+  pub fn new(tag_parser: Box<dyn TagParser>) -> Parser {
     Parser {
       finished_entities: Vec::new(),
       entity_name: String::new(),
@@ -34,58 +33,55 @@ impl Parser {
       field_name: String::new(),
       field_type: String::new(),
       associated_target: String::new(),
-      field_attributes: Vec::new(),
+      field_attributes: HashMap::new(),
       schema_name: String::new(),
       tag_parser: Some(tag_parser),
     }
   }
 
   pub fn parse(&mut self) -> String {
-    let parser = self.tag_parser.take().unwrap();
-    for e in parser {
-      match e {
-        Ok(XmlEvent::StartElement {
-          name, attributes, ..
-        }) => match name.local_name.as_ref() {
-          "Schema" => self.on_schema_start(&attributes),
-          "EntityType" => self.on_entity_start(&attributes),
-          "Property" => self.on_property_start(&attributes),
-          "NavigationProperty" => self.on_navigation_property_start(&attributes),
-          "PropertyRef" => self.on_property_ref(attributes),
-          _ => (),
-        },
-        Ok(XmlEvent::EndElement { name }) => match name.local_name.as_ref() {
-          "EntityType" => self.on_entity_close(),
-          "Property" => self.on_property_close(),
-          "NavigationProperty" => self.on_navigation_property_close(),
-          _ => (),
-        },
-        Err(e) => {
-          panic!("Error: {}", e);
+    if let Some(tag_parser) = self.tag_parser.take() {
+      for e in tag_parser {
+        match e {
+          Ok(TagEvent::Open { tag, attributes }) => match tag {
+            Tag::Schema => self.on_schema_start(&attributes),
+            Tag::EntityType => self.on_entity_start(&attributes),
+            Tag::Property => self.on_property_start(&attributes),
+            Tag::NavigationProperty => self.on_navigation_property_start(&attributes),
+            Tag::PropertyRef => self.on_property_ref(attributes),
+            _ => ()
+          },
+          Ok(TagEvent::Close { tag }) => match tag {
+            Tag::EntityType => self.on_entity_close(),
+            Tag::Property => self.on_property_close(),
+            Tag::NavigationProperty => self.on_navigation_property_close(),
+            _ => (),
+          },
+          Err(e) => {
+            panic!("Error: {}", e);
+          }
         }
-        _ => {}
       }
     }
-
     self.compose_cds_string()
   }
 
-  fn on_schema_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+  fn on_schema_start(&mut self, attributes: &HashMap<String, String>) {
     self.schema_name =
       get_attribute(&attributes, "Namespace").expect("Failed to get schemas's namespace");
   }
 
-  fn on_entity_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+  fn on_entity_start(&mut self, attributes: &HashMap<String, String>) {
     self.entity_name = get_attribute(&attributes, "Name").expect("Failed to get entity's name");
   }
 
-  fn on_property_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+  fn on_property_start(&mut self, attributes: &HashMap<String, String>) {
     self.field_name = get_attribute(&attributes, "Name").expect("Failed to get property's name");
     self.field_type = get_attribute(&attributes, "Type").expect("Failed to get property's type");
     self.field_attributes = attributes.clone();
   }
 
-  fn on_navigation_property_start(&mut self, attributes: &Vec<OwnedAttribute>) {
+  fn on_navigation_property_start(&mut self, attributes: &HashMap<String, String>) {
     self.field_name =
       get_attribute(&attributes, "Name").expect("Failed to get nav. property's name");
     self.associated_target = get_attribute(&attributes, "Type")
@@ -100,7 +96,7 @@ impl Parser {
     self.associated_target = self.associated_target.replace(")", "");
   }
 
-  fn on_property_ref(&mut self, attributes: Vec<OwnedAttribute>) {
+  fn on_property_ref(&mut self, attributes: HashMap<String, String>) {
     let field_name = get_attribute(&attributes, "Name").expect("Failed to get property ref's name");
     self.keys.push(field_name);
   }

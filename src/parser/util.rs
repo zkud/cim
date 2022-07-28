@@ -1,8 +1,5 @@
-use xml::attribute::OwnedAttribute;
+use std::collections::HashMap;
 
-pub fn get_attribute(attributes: &Vec<OwnedAttribute>, name: &str) -> Option<String> {
-  attributes
-    .iter()
-    .find(|attribute| attribute.name.local_name == name)
-    .and_then(|attr| Some(attr.value.to_string()))
+pub fn get_attribute(attributes: &HashMap<String, String>, name: &str) -> Option<String> {
+  attributes.get(name).and_then(|value| Some(value.clone()))
 }
