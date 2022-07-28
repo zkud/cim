@@ -139,3 +139,105 @@ impl Parser {
     cds
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::tag_parser::types::Tag;
+  use super::tag_parser::types::TagError;
+  use super::tag_parser::types::TagEvent;
+  use super::tag_parser::types::TagParser;
+  use super::Parser;
+  use std::collections::HashMap;
+
+  macro_rules! open_tag {
+    ($tag_type: expr, $attributes: expr) => {
+      TagEvent::Open {
+        tag: $tag_type,
+        attributes: HashMap::from($attributes),
+      }
+    };
+  }
+  macro_rules! close_tag {
+    ($tag_type: expr) => {
+      TagEvent::Close { tag: $tag_type }
+    };
+  }
+
+  #[test]
+  fn with_usual_input_it_generates_valid_cds() {
+    let tags = vec![
+      open_tag!(
+        Tag::Schema,
+        [(String::from("Namespace"), String::from("test"))]
+      ),
+      open_tag!(
+        Tag::EntityType,
+        [(String::from("Name"), String::from("Tests"))]
+      ),
+      open_tag!(
+        Tag::Property,
+        [
+          (String::from("Name"), String::from("field1")),
+          (String::from("Type"), String::from("Edm.Guid"))
+        ]
+      ),
+      close_tag!(Tag::Property),
+      open_tag!(
+        Tag::Property,
+        [
+          (String::from("Name"), String::from("field2")),
+          (String::from("Type"), String::from("Edm.Int32"))
+        ]
+      ),
+      close_tag!(Tag::Property),
+      open_tag!(
+        Tag::Property,
+        [
+          (String::from("Name"), String::from("field3")),
+          (String::from("Type"), String::from("Edm.Int64"))
+        ]
+      ),
+      close_tag!(Tag::Property),
+      close_tag!(Tag::EntityType),
+      close_tag!(Tag::Schema),
+    ];
+    let cds = parse(tags);
+    assert!(cds.contains("entity Tests"));
+    assert!(cds.contains("field1: UUID;"));
+    assert!(cds.contains("field2: Integer;"));
+    assert!(cds.contains("field3: Integer64;"));
+  }
+
+  fn parse(tag_events: Vec<TagEvent>) -> String {
+    let tag_events: Vec<Result<TagEvent, TagError>> =
+      tag_events.into_iter().map(|e| Ok(e)).collect();
+    let mut parser = build_parser(tag_events);
+    parser.parse()
+  }
+
+  fn build_parser(events: Vec<Result<TagEvent, TagError>>) -> Parser {
+    let tag_parser = VecTagParser::new(events);
+    Parser::new(Box::new(tag_parser))
+  }
+
+  struct VecTagParser {
+    events: std::vec::IntoIter<Result<TagEvent, TagError>>,
+  }
+
+  impl VecTagParser {
+    pub fn new(events: Vec<Result<TagEvent, TagError>>) -> Self {
+      let events = events.into_iter();
+      VecTagParser { events }
+    }
+  }
+
+  impl Iterator for VecTagParser {
+    type Item = Result<TagEvent, TagError>;
+
+    fn next(&mut self) -> Option<Result<TagEvent, TagError>> {
+      self.events.next()
+    }
+  }
+
+  impl TagParser for VecTagParser {}
+}
