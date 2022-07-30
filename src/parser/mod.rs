@@ -150,11 +150,16 @@ mod tests {
   use std::collections::HashMap;
 
   macro_rules! open_tag {
-    ($tag_type: expr, $attributes: expr) => {
+    ($tag_type: expr, $(($key: expr, $val: expr)),*) => {
       TagEvent::Open {
         tag: $tag_type,
-        attributes: HashMap::from($attributes),
+        attributes: HashMap::from([$(map_spec!($key, $val)),*]),
       }
+    };
+  }
+  macro_rules! map_spec {
+    ($key: expr, $value: expr) => {
+      (String::from($key), String::from($value))
     };
   }
   macro_rules! close_tag {
@@ -166,37 +171,13 @@ mod tests {
   #[test]
   fn with_usual_input_it_generates_valid_cds() {
     let tags = vec![
-      open_tag!(
-        Tag::Schema,
-        [(String::from("Namespace"), String::from("test"))]
-      ),
-      open_tag!(
-        Tag::EntityType,
-        [(String::from("Name"), String::from("Tests"))]
-      ),
-      open_tag!(
-        Tag::Property,
-        [
-          (String::from("Name"), String::from("field1")),
-          (String::from("Type"), String::from("Edm.Guid"))
-        ]
-      ),
+      open_tag!(Tag::Schema, ("Namespace", "test")),
+      open_tag!(Tag::EntityType, ("Name", "Tests")),
+      open_tag!(Tag::Property, ("Name", "field1"), ("Type", "Edm.Guid")),
       close_tag!(Tag::Property),
-      open_tag!(
-        Tag::Property,
-        [
-          (String::from("Name"), String::from("field2")),
-          (String::from("Type"), String::from("Edm.Int32"))
-        ]
-      ),
+      open_tag!(Tag::Property, ("Name", "field2"), ("Type", "Edm.Int32")),
       close_tag!(Tag::Property),
-      open_tag!(
-        Tag::Property,
-        [
-          (String::from("Name"), String::from("field3")),
-          (String::from("Type"), String::from("Edm.Int64"))
-        ]
-      ),
+      open_tag!(Tag::Property, ("Name", "field3"), ("Type", "Edm.Int64")),
       close_tag!(Tag::Property),
       close_tag!(Tag::EntityType),
       close_tag!(Tag::Schema),
