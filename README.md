@@ -1,12 +1,13 @@
 # **C**DS **I**mplementation generation by a **M**etadata document
 
 [![CI](https://github.com/zkud/cim/actions/workflows/ci.yml/badge.svg)](https://github.com/zkud/cim/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/zkud/cim/branch/main/graph/badge.svg?token=YZPSP6J4TK)](https://codecov.io/gh/zkud/cim)
 
 This is a simle CLI program to generate KISS CAP CDS implementations from OData (both v2 and v4 are supported) Metadata documents.
 
 ```console
 foo@bar:~$ cim metadata.xml
-CIM 0.2.6
+CIM 0.2.7
 Reading metadata.xml...
 entity ProjectElemDetail {
   ObjectID: String;
