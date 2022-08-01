@@ -100,6 +100,7 @@ impl CDSType {
     match odata_type.as_str() {
       "Edm.Guid" => Self::UUID,
       "Edm.Boolean" => Self::Boolean,
+      "Edm.Int16" => Self::Integer,
       "Edm.Int32" => Self::Integer,
       "Edm.Int64" => Self::Integer64,
       "Edm.Decimal" => {
