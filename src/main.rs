@@ -4,7 +4,7 @@ use clap::Parser;
 
 fn main() {
   let args = Args::parse();
-  println!("CIM 0.3.0");
+  println!("CIM 0.3.1");
   println!("Reading {}...", args.path);
   let cds = run(args);
   print!("{cds}");

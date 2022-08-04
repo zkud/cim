@@ -401,6 +401,40 @@ fn with_usual_input_it_generates_valid_cds() {
   assert!(cds.contains("field3: Integer64;"));
 }
 
+#[test]
+#[should_panic]
+fn with_missing_decimal_scale_or_precision_it_panics() {
+  let tags = vec![
+    open_tag!(Tag::Schema, ("Namespace", "test")),
+    open_tag!(
+      Tag::EntityType,
+      ("Name", "FeaturedProduct"),
+      ("BaseType", "ODataDemo.Product")
+    ),
+    open_tag!(
+      Tag::Property,
+      ("Name", "TotalExpense"),
+      ("Type", "Edm.Decimal"),
+      ("Nullable", "false")
+    ),
+    close_tag!(Tag::Property),
+    open_tag!(
+      Tag::NavigationProperty,
+      ("Name", "Advertisement"),
+      (
+        "Relationship",
+        "ODataDemo.FeaturedProduct_Advertisement_Advertisement_FeaturedProduct"
+      ),
+      ("ToRole", "Advertisement_FeaturedProduct"),
+      ("FromRole", "FeaturedProduct_Advertisement")
+    ),
+    close_tag!(Tag::NavigationProperty),
+    close_tag!(Tag::EntityType),
+    close_tag!(Tag::Schema),
+  ];
+  parse(tags);
+}
+
 fn parse(tag_events: Vec<TagEvent>) -> String {
   let tag_events: Vec<Result<TagEvent, TagError>> = tag_events.into_iter().map(|e| Ok(e)).collect();
   let mut parser = build_parser(tag_events);
