@@ -4,12 +4,12 @@ mod util;
 #[cfg(test)]
 mod tests;
 
-use cds::entity::Entity;
-use cds::field::Field;
-use std::collections::HashMap;
 use super::xml_tags::types::Tag;
 use super::xml_tags::types::TagEvent;
 use super::xml_tags::types::TagParser;
+use cds::entity::Entity;
+use cds::field::Field;
+use std::collections::HashMap;
 use util::get_attribute;
 
 pub struct Parser {
