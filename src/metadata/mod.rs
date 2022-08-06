@@ -1,5 +1,4 @@
 mod cds;
-pub mod tag_parser;
 mod util;
 
 #[cfg(test)]
@@ -8,9 +7,9 @@ mod tests;
 use cds::entity::Entity;
 use cds::field::Field;
 use std::collections::HashMap;
-use tag_parser::types::Tag;
-use tag_parser::types::TagEvent;
-use tag_parser::types::TagParser;
+use super::xml_tags::types::Tag;
+use super::xml_tags::types::TagEvent;
+use super::xml_tags::types::TagParser;
 use util::get_attribute;
 
 pub struct Parser {

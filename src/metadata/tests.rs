@@ -1,7 +1,7 @@
-use super::tag_parser::types::Tag;
-use super::tag_parser::types::TagError;
-use super::tag_parser::types::TagEvent;
-use super::tag_parser::types::TagParser;
+use super::super::xml_tags::types::Tag;
+use super::super::xml_tags::types::TagError;
+use super::super::xml_tags::types::TagEvent;
+use super::super::xml_tags::types::TagParser;
 use super::Parser;
 use std::collections::HashMap;
 
