@@ -13,7 +13,7 @@ pub struct Args {
 
 pub fn run(args: Args) -> String {
   let path = args.path;
-  let tag_parser = XmlTagParser::new(path);
+  let tag_parser = XmlTagParser::from_file(path);
   let mut parser = metadata::Parser::new(Box::new(tag_parser));
   let cds = parser.parse();
   cds
