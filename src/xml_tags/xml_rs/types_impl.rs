@@ -1,16 +1,16 @@
-use super::types::Tag;
-use super::types::TagError;
-use super::types::TagEvent;
-use super::types::TagParser;
+use super::super::types::Tag;
+use super::super::types::TagError;
+use super::super::types::TagEvent;
+use super::super::types::TagParser;
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use xml::attribute::OwnedAttribute;
 use xml::reader::{EventReader, Events, XmlEvent};
 
 pub struct XmlTagParser {
-  tag_parser: Events<BufReader<File>>,
+  tag_parser: Events<BufReader<Box<dyn Read>>>,
 }
 
 impl Iterator for XmlTagParser {
@@ -41,7 +41,7 @@ impl TagParser for XmlTagParser {}
 
 impl XmlTagParser {
   pub fn new(path: String) -> Self {
-    let file = File::open(path).unwrap();
+    let file = Box::new(File::open(path).unwrap()) as Box<dyn Read>;
     let file = BufReader::new(file);
     let tag_parser = EventReader::new(file);
     let tag_parser = tag_parser.into_iter();
