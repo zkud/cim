@@ -4,6 +4,7 @@ mod xml_tags;
 use clap::Parser;
 use xml_tags::xml_rs::XmlTagParser;
 
+#[cfg(not(tarpaulin_include))]
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
@@ -11,6 +12,7 @@ pub struct Args {
   pub path: String,
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn run(args: Args) -> String {
   let path = args.path;
   let tag_parser = XmlTagParser::from_file(path);
