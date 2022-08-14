@@ -1,11 +1,11 @@
-use super::super::types::Tag;
-use super::super::types::TagError;
-use super::super::types::TagEvent;
-use super::super::types::TagParser;
+use super::types::Tag;
+use super::types::TagError;
+use super::types::TagEvent;
+use super::types::TagParser;
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufReader, Cursor, Read};
+use std::io::{BufReader, Read};
 use xml::attribute::OwnedAttribute;
 use xml::reader::{EventReader, Events, XmlEvent};
 
@@ -50,12 +50,6 @@ impl XmlTagParser {
   pub fn from_file(path: String) -> Self {
     let file = Box::new(File::open(path).unwrap()) as Box<dyn Read>;
     Self::new(file)
-  }
-
-  pub fn from_string(value: String) -> Self {
-    let cursor = Cursor::new(value);
-    let cursor = Box::new(cursor) as Box<dyn Read>;
-    Self::new(cursor)
   }
 
   fn build_open_tag_event(name: String, attributes: &Vec<OwnedAttribute>) -> TagEvent {
