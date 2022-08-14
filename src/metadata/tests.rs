@@ -1,7 +1,7 @@
-use super::tag_parser::types::Tag;
-use super::tag_parser::types::TagError;
-use super::tag_parser::types::TagEvent;
-use super::tag_parser::types::TagParser;
+use super::super::xml_tags::types::Tag;
+use super::super::xml_tags::types::TagError;
+use super::super::xml_tags::types::TagEvent;
+use super::super::xml_tags::types::TagParser;
 use super::Parser;
 use std::collections::HashMap;
 
@@ -395,10 +395,78 @@ fn with_usual_input_it_generates_valid_cds() {
     close_tag!(Tag::Schema),
   ];
   let cds = parse(tags);
-  assert!(cds.contains("entity Tests"));
-  assert!(cds.contains("field1: UUID;"));
-  assert!(cds.contains("field2: Integer;"));
-  assert!(cds.contains("field3: Integer64;"));
+  assert_eq!(
+    cds,
+    "entity Tests {
+  field1: UUID;
+  field2: Integer;
+  field3: Integer64;
+}
+entity Product {
+  key ID: Integer;
+  Name: String;
+  Description: String;
+  ReleaseDate: DateTime;
+  DiscontinuedDate: DateTime;
+  Rating: Integer;
+  Price: Double;
+  Categories: Association to Category_Products on ...;
+  Supplier: Association to Supplier_Products on ...;
+  ProductDetail: Association to ProductDetail_Product on ...;
+}
+entity FeaturedProduct {
+  Advertisement: Association to Advertisement_FeaturedProduct on ...;
+}
+entity ProductDetail {
+  key ProductID: Integer;
+  Details: String;
+  Product: Association to Product_ProductDetail on ...;
+}
+entity Category {
+  key ID: Integer;
+  Name: String;
+  Products: Association to Product_Categories on ...;
+}
+entity Supplier {
+  key ID: Integer;
+  Name: String;
+  Concurrency: Integer;
+  Products: Association to Product_Supplier on ...;
+  Street: String;
+  City: String;
+  State: String;
+  ZipCode: String;
+  Country: String;
+}
+entity Person {
+  key ID: Integer;
+  Name: String;
+  PersonDetail: Association to PersonDetail_Person on ...;
+}
+entity Customer {
+  TotalExpense: Decimal(5, 10);
+}
+entity Employee {
+  EmployeeID: Integer64;
+  HireDate: DateTime;
+  Salary: Double @odata.Type: 'Edm.Single';
+}
+entity PersonDetail {
+  key PersonID: Integer;
+  Age: Integer @odata.Type: 'Edm.Byte';
+  Gender: Boolean;
+  Phone: String;
+  Photo: LargeBinary @odata.Type: 'Edm.Stream';
+  Person: Association to Person_PersonDetail on ...;
+}
+entity Advertisement {
+  key ID: UUID;
+  Name: String;
+  AirDate: DateTime;
+  FeaturedProduct: Association to FeaturedProduct_Advertisement on ...;
+}
+"
+  );
 }
 
 #[test]

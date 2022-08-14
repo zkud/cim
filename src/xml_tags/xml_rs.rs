@@ -5,12 +5,12 @@ use super::types::TagParser;
 
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use xml::attribute::OwnedAttribute;
 use xml::reader::{EventReader, Events, XmlEvent};
 
 pub struct XmlTagParser {
-  tag_parser: Events<BufReader<File>>,
+  tag_parser: Events<BufReader<Box<dyn Read>>>,
 }
 
 impl Iterator for XmlTagParser {
@@ -40,12 +40,16 @@ impl Iterator for XmlTagParser {
 impl TagParser for XmlTagParser {}
 
 impl XmlTagParser {
-  pub fn new(path: String) -> Self {
-    let file = File::open(path).unwrap();
-    let file = BufReader::new(file);
+  pub fn new(reader: Box<dyn Read>) -> Self {
+    let file = BufReader::new(reader);
     let tag_parser = EventReader::new(file);
     let tag_parser = tag_parser.into_iter();
     XmlTagParser { tag_parser }
+  }
+
+  pub fn from_file(path: String) -> Self {
+    let file = Box::new(File::open(path).unwrap()) as Box<dyn Read>;
+    Self::new(file)
   }
 
   fn build_open_tag_event(name: String, attributes: &Vec<OwnedAttribute>) -> TagEvent {

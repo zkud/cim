@@ -1,22 +1,22 @@
 mod cds;
-pub mod tag_parser;
 mod util;
 
 #[cfg(test)]
 mod tests;
 
+use super::xml_tags::types::Tag;
+use super::xml_tags::types::TagEvent;
+use super::xml_tags::types::TagParser;
 use cds::entity::Entity;
 use cds::field::Field;
 use std::collections::HashMap;
-use tag_parser::types::Tag;
-use tag_parser::types::TagEvent;
-use tag_parser::types::TagParser;
 use util::get_attribute;
 
 pub struct Parser {
   finished_entities: Vec<Entity>,
   entity_name: String,
   fields: HashMap<String, Field>,
+  fields_order: Vec<String>,
   keys: Vec<String>,
   field_name: String,
   field_type: String,
@@ -32,6 +32,7 @@ impl Parser {
       finished_entities: Vec::new(),
       entity_name: String::new(),
       fields: HashMap::new(),
+      fields_order: Vec::new(),
       keys: Vec::new(),
       field_name: String::new(),
       field_type: String::new(),
@@ -111,17 +112,23 @@ impl Parser {
         .expect("Unknown property in property ref")
         .set_as_key()
     }
-    let entity_fields = self.fields.clone().into_values().collect();
+    let entity_fields = self
+      .fields_order
+      .iter()
+      .map(|name| self.fields.get(name).unwrap().clone())
+      .collect();
     let entity = Entity::new(&self.entity_name, &entity_fields);
     self.keys.clear();
     self.finished_entities.push(entity);
     self.entity_name.clear();
     self.fields.clear();
+    self.fields_order.clear();
   }
 
   fn on_property_close(&mut self) {
     let field = Field::from_odata(&self.field_name, &self.field_type, &self.field_attributes);
     self.fields.insert(self.field_name.clone(), field);
+    self.fields_order.push(self.field_name.clone());
     self.field_name.clear();
     self.field_type.clear();
     self.field_attributes.clear();
@@ -130,6 +137,7 @@ impl Parser {
   fn on_navigation_property_close(&mut self) {
     let field = Field::new_association(&self.field_name, &self.associated_target);
     self.fields.insert(self.field_name.clone(), field);
+    self.fields_order.push(self.field_name.clone());
     self.associated_target.clear();
     self.field_name.clear();
   }
