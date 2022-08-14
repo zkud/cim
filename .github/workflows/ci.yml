@@ -35,7 +35,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.18.0'
-          args: '--ignore-tests --exclude-files ./src/main.rs,./src/lib.rs,./src/xml_tags/types.rs -- --test-threads 4'
+          args: '--ignore-tests --exclude-files src/main.rs,src/lib.rs,src/xml_tags/types.rs -- --test-threads 4'
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v1.5.2
