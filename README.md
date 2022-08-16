@@ -3,11 +3,11 @@
 [![CI](https://github.com/zkud/cim/actions/workflows/ci.yml/badge.svg)](https://github.com/zkud/cim/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/zkud/cim/branch/main/graph/badge.svg?token=YZPSP6J4TK)](https://codecov.io/gh/zkud/cim)
 
-This is a simle CLI program to generate KISS CAP CDS implementations from OData (both v2 and v4 are supported) Metadata documents.
+This is a simple CLI program to generate KISS CAP CDS implementations from OData (both v2 and v4 are supported) Metadata documents.
 
 ```console
 foo@bar:~$ cim metadata.xml
-CIM 0.3.2
+CIM 0.3.3
 Reading metadata.xml...
 entity ProjectElemDetail {
   ObjectID: String;
