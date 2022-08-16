@@ -1,4 +1,3 @@
-use super::super::util::get_attribute;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Result};
 
@@ -104,10 +103,10 @@ impl CDSType {
       "Edm.Int32" => Self::Integer,
       "Edm.Int64" => Self::Integer64,
       "Edm.Decimal" => {
-        let scale = get_attribute(&attributes, "scale");
-        let scale = scale.or(get_attribute(&attributes, "Scale"));
-        let precision = get_attribute(&attributes, "precision");
-        let precision = precision.or(get_attribute(&attributes, "Precision"));
+        let scale = attributes.get("scale").cloned();
+        let scale = scale.or(attributes.get("Scale").cloned());
+        let precision = attributes.get("precision").cloned();
+        let precision = precision.or(attributes.get("Precision").cloned());
         match (scale, precision) {
           (Some(scale), Some(precision)) => Self::Decimal { scale, precision },
           _ => panic!("Failed to parse a Decimal type, scale or precision is missing"),
@@ -118,7 +117,7 @@ impl CDSType {
       "Edm.TimeOfDay" | "Edm.Time" => Self::Time,
       "Edm.DateTime" | "Edm.DateTimeOffset" => Self::DateTime,
       "Edm.String" => {
-        let length = get_attribute(&attributes, "MaxLength");
+        let length = attributes.get("MaxLength").cloned();
         Self::String { length }
       }
       "Edm.Binary" => Self::Binary,

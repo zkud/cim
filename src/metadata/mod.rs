@@ -1,5 +1,4 @@
 mod cds;
-mod util;
 
 #[cfg(test)]
 mod tests;
@@ -10,7 +9,6 @@ use super::xml_tags::types::TagParser;
 use cds::entity::Entity;
 use cds::field::Field;
 use std::collections::HashMap;
-use util::get_attribute;
 
 pub struct Parser {
   finished_entities: Vec<Entity>,
@@ -70,25 +68,24 @@ impl Parser {
   }
 
   fn on_schema_start(&mut self, attributes: &HashMap<String, String>) {
-    self.schema_name =
-      get_attribute(&attributes, "Namespace").expect("Failed to get schemas's namespace");
+    self.schema_name = attributes.get("Namespace").cloned().expect("Failed to get schemas's namespace");
   }
 
   fn on_entity_start(&mut self, attributes: &HashMap<String, String>) {
-    self.entity_name = get_attribute(&attributes, "Name").expect("Failed to get entity's name");
+    self.entity_name = attributes.get("Name").cloned().expect("Failed to get entity's name");
   }
 
   fn on_property_start(&mut self, attributes: &HashMap<String, String>) {
-    self.field_name = get_attribute(&attributes, "Name").expect("Failed to get property's name");
-    self.field_type = get_attribute(&attributes, "Type").expect("Failed to get property's type");
+    self.field_name = attributes.get("Name").cloned().expect("Failed to get property's name");
+    self.field_type = attributes.get("Type").cloned().expect("Failed to get property's type");
     self.field_attributes = attributes.clone();
   }
 
   fn on_navigation_property_start(&mut self, attributes: &HashMap<String, String>) {
     self.field_name =
-      get_attribute(&attributes, "Name").expect("Failed to get nav. property's name");
-    self.associated_target = get_attribute(&attributes, "Type")
-      .or(get_attribute(&attributes, "ToRole"))
+      attributes.get("Name").cloned().expect("Failed to get nav. property's name");
+    self.associated_target = attributes.get("Type").cloned()
+      .or(attributes.get("ToRole").cloned())
       .expect("Failed to get nav. property's target");
     if self.schema_name.len() > 0 {
       self.associated_target = self
@@ -100,7 +97,7 @@ impl Parser {
   }
 
   fn on_property_ref(&mut self, attributes: HashMap<String, String>) {
-    let field_name = get_attribute(&attributes, "Name").expect("Failed to get property ref's name");
+    let field_name = attributes.get("Name").cloned().expect("Failed to get property ref's name");
     self.keys.push(field_name);
   }
 
