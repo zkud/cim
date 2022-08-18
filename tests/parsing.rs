@@ -8,7 +8,7 @@ fn with_usual_metadata_it_returns_valid_cds() {
     path: "./tests/examples/parsing/metadata.xml".to_string(),
   };
 
-  let cds = run(args);
+  let cds = run(args).unwrap();
   let valid_cds = read_to_string("./tests/examples/parsing/expected.cds").unwrap();
 
   assert_eq!(cds, valid_cds);
