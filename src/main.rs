@@ -5,7 +5,7 @@ use std::process::exit;
 
 fn main() {
   let args = Args::parse();
-  println!("CIM 0.3.3");
+  println!("CIM 0.3.4");
   println!("Reading {}...", args.path);
   match run(args) {
     Ok(cds) => {
