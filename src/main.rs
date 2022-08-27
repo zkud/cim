@@ -12,7 +12,7 @@ fn main() {
       print!("{cds}");
     }
     Err(error) => {
-      eprint!("{error}");
+      eprintln!("{error}");
       exit(1);
     }
   }
