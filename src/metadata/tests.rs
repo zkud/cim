@@ -471,7 +471,6 @@ entity Advertisement {
 }
 
 #[test]
-#[should_panic]
 fn with_missing_decimal_scale_or_precision_it_panics() {
   let tags = vec![
     open_tag!(Tag::Schema, ("Namespace", "test")),
@@ -501,7 +500,12 @@ fn with_missing_decimal_scale_or_precision_it_panics() {
     close_tag!(Tag::EntityType),
     close_tag!(Tag::Schema),
   ];
-  parse(tags).unwrap();
+  let result = parse(tags);
+  if let Err(error) = result {
+    assert_eq!(error.to_string(), "Metadata Parser Error, reason: Failed to parse a Decimal type, scale or precision is missing");
+    return;
+  }
+  panic!("Missed a parsing error")
 }
 
 fn parse(tag_events: Vec<TagEvent>) -> Result<String, Box<dyn Error>> {
