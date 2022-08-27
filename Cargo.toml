@@ -1,13 +1,13 @@
 [package]
 name = "cim"
 description = "CDS Implementation generation by a Metadata document"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2021"
 authors = ["zkud <anton.kudyrka@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/zkud/cim"
 homepage = "https://github.com/zkud/cim"
-keywords = ["cli", "CDS", "OData v2", "OData v4", "Metadata"]
+keywords = ["cli", "CDS", "OData", "Metadata"]
 readme = "README.md"
 categories = ["command-line-utilities"]
 

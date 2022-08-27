@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - OS: [e.g. Debian]
- - Version [e.g. 0.3.4]
+ - Version [e.g. 0.3.5]
 
 **Additional context**
 Add any other context about the problem here.
