@@ -23,7 +23,9 @@ jobs:
         run: cargo build --all-features
 
   test:
-    needs: build
+    needs:
+      - build
+      - test
 
     strategy:
       matrix:
@@ -41,7 +43,9 @@ jobs:
         run: cargo test --verbose
 
   lint:
-    needs: build, test
+    needs:
+      - build
+      - test
 
     name: Lint
     runs-on: ubuntu-latest
@@ -59,7 +63,9 @@ jobs:
       run: cargo clippy
 
   code-cov:
-    needs: build, test
+    needs:
+    - build
+    - test
 
     name: Code Coverage
     runs-on: ubuntu-latest
@@ -92,7 +98,9 @@ jobs:
           path: cobertura.xml
 
   code-scan:
-    needs: build, test
+    needs:
+    - build
+    - test
 
     name: Code Scan
     runs-on: ubuntu-latest
