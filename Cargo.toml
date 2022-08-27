@@ -6,8 +6,10 @@ edition = "2021"
 authors = ["zkud <anton.kudyrka@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/zkud/cim"
-keywords = ["CDS", "OData v2", "OData v4", "Metadata"]
+homepage = "https://github.com/zkud/cim"
+keywords = ["cli", "CDS", "OData v2", "OData v4", "Metadata"]
 readme = "README.md"
+categories = ["command-line-utilities"]
 
 [dependencies]
 xml-rs = "0.8"
