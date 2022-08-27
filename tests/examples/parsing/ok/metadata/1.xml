@@ -13,6 +13,7 @@
 				</Key>
 				<Property Name  ="ID" Type="Edm.String" />
 				<Property Name  ="ParentObjectID" Type="Edm.String" />
+				<Property Name  ="ParentObjectIDLimited" Type="Edm.String" MaxLength="10" />
 				<NavigationProperty Name="Relationships"
 					Relationship="GANTT_CHART_ODATA_SRV.Relationship" FromRole="FromRole_Relationship"
 					ToRole="ToRole_Relationship" />
