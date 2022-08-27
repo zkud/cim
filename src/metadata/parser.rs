@@ -116,13 +116,13 @@ impl Parser {
         "Failed to get nav. property's target",
       ))?
       .to_string();
-    if self.schema_name.len() > 0 {
+    if !self.schema_name.is_empty() {
       self.associated_target = self
         .associated_target
         .replace(&(self.schema_name.clone() + "."), "");
     }
     self.associated_target = self.associated_target.replace("Collection(", "");
-    self.associated_target = self.associated_target.replace(")", "");
+    self.associated_target = self.associated_target.replace(')', "");
     Ok(())
   }
 

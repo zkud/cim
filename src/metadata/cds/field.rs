@@ -86,7 +86,7 @@ impl Display for CDSType {
       CDSType::DateTime => String::from("DateTime"),
       CDSType::String { length } => match length {
         Some(length) => format!("String({length})"),
-        None => format!("String"),
+        None => "String".to_string(),
       },
       CDSType::Binary => String::from("Binary"),
       CDSType::Single => String::from("Double @odata.Type: 'Edm.Single'"),

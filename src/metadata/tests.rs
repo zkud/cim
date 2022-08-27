@@ -505,7 +505,7 @@ fn with_missing_decimal_scale_or_precision_it_panics() {
 }
 
 fn parse(tag_events: Vec<TagEvent>) -> Result<String, Box<dyn Error>> {
-  let tag_events: Vec<Result<TagEvent, TagError>> = tag_events.into_iter().map(|e| Ok(e)).collect();
+  let tag_events: Vec<Result<TagEvent, TagError>> = tag_events.into_iter().map(Ok).collect();
   let mut parser = build_parser(tag_events);
   parser.parse()
 }

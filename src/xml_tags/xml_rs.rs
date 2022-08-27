@@ -85,10 +85,10 @@ impl XmlTagParser {
   }
 
   fn is_supported_tag(name: &str) -> bool {
-    return name == "Schema"
+    name == "Schema"
       || name == "EntityType"
       || name == "Property"
       || name == "PropertyRef"
-      || name == "NavigationProperty";
+      || name == "NavigationProperty"
   }
 }
