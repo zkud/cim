@@ -1,4 +1,5 @@
 mod cds;
+pub mod error;
 
 #[cfg(test)]
 mod tests;
@@ -8,6 +9,7 @@ use super::xml_tags::types::TagEvent;
 use super::xml_tags::types::TagParser;
 use cds::entity::Entity;
 use cds::field::Field;
+use error::ParserError;
 use std::collections::HashMap;
 use std::error::Error;
 
@@ -47,15 +49,15 @@ impl Parser {
       for e in tag_parser {
         match e {
           Ok(TagEvent::Open { tag, attributes }) => match tag {
-            Tag::Schema => self.on_schema_start(&attributes),
-            Tag::EntityType => self.on_entity_start(&attributes),
-            Tag::Property => self.on_property_start(&attributes),
-            Tag::NavigationProperty => self.on_navigation_property_start(&attributes),
-            Tag::PropertyRef => self.on_property_ref(attributes),
+            Tag::Schema => self.on_schema_start(&attributes)?,
+            Tag::EntityType => self.on_entity_start(&attributes)?,
+            Tag::Property => self.on_property_start(&attributes)?,
+            Tag::NavigationProperty => self.on_navigation_property_start(&attributes)?,
+            Tag::PropertyRef => self.on_property_ref(attributes)?,
           },
           Ok(TagEvent::Close { tag }) => match tag {
-            Tag::EntityType => self.on_entity_close(),
-            Tag::Property => self.on_property_close(),
+            Tag::EntityType => self.on_entity_close()?,
+            Tag::Property => self.on_property_close()?,
             Tag::NavigationProperty => self.on_navigation_property_close(),
             _ => (),
           },
@@ -68,42 +70,58 @@ impl Parser {
     Ok(self.compose_cds_string())
   }
 
-  fn on_schema_start(&mut self, attributes: &HashMap<String, String>) {
+  fn on_schema_start(
+    &mut self,
+    attributes: &HashMap<String, String>,
+  ) -> Result<(), Box<dyn Error>> {
     self.schema_name = attributes
       .get("Namespace")
-      .cloned()
-      .expect("Failed to get schemas's namespace");
+      .ok_or(ParserError::new_boxed("Failed to get schema name"))?
+      .to_string();
+    Ok(())
   }
 
-  fn on_entity_start(&mut self, attributes: &HashMap<String, String>) {
+  fn on_entity_start(
+    &mut self,
+    attributes: &HashMap<String, String>,
+  ) -> Result<(), Box<dyn Error>> {
     self.entity_name = attributes
       .get("Name")
-      .cloned()
-      .expect("Failed to get entity's name");
+      .ok_or(ParserError::new_boxed("Failed to get entity's name"))?
+      .to_string();
+    Ok(())
   }
 
-  fn on_property_start(&mut self, attributes: &HashMap<String, String>) {
+  fn on_property_start(
+    &mut self,
+    attributes: &HashMap<String, String>,
+  ) -> Result<(), Box<dyn Error>> {
     self.field_name = attributes
       .get("Name")
-      .cloned()
-      .expect("Failed to get property's name");
+      .ok_or(ParserError::new_boxed("Failed to get property's name"))?
+      .to_string();
     self.field_type = attributes
       .get("Type")
-      .cloned()
-      .expect("Failed to get property's type");
+      .ok_or(ParserError::new_boxed("Failed to get property's type"))?
+      .to_string();
     self.field_attributes = attributes.clone();
+    Ok(())
   }
 
-  fn on_navigation_property_start(&mut self, attributes: &HashMap<String, String>) {
+  fn on_navigation_property_start(
+    &mut self,
+    attributes: &HashMap<String, String>,
+  ) -> Result<(), Box<dyn Error>> {
     self.field_name = attributes
       .get("Name")
-      .cloned()
-      .expect("Failed to get nav. property's name");
+      .ok_or(ParserError::new_boxed("Failed to get nav. property's name"))?
+      .to_string();
     self.associated_target = attributes
       .get("Type")
-      .cloned()
-      .or(attributes.get("ToRole").cloned())
-      .expect("Failed to get nav. property's target");
+      .ok_or(ParserError::new_boxed(
+        "Failed to get nav. property's target",
+      ))?
+      .to_string();
     if self.schema_name.len() > 0 {
       self.associated_target = self
         .associated_target
@@ -111,22 +129,24 @@ impl Parser {
     }
     self.associated_target = self.associated_target.replace("Collection(", "");
     self.associated_target = self.associated_target.replace(")", "");
+    Ok(())
   }
 
-  fn on_property_ref(&mut self, attributes: HashMap<String, String>) {
+  fn on_property_ref(&mut self, attributes: HashMap<String, String>) -> Result<(), Box<dyn Error>> {
     let field_name = attributes
       .get("Name")
-      .cloned()
-      .expect("Failed to get property ref's name");
+      .ok_or(ParserError::new_boxed("Failed to get property ref's name"))?
+      .to_string();
     self.keys.push(field_name);
+    Ok(())
   }
 
-  fn on_entity_close(&mut self) {
+  fn on_entity_close(&mut self) -> Result<(), Box<dyn Error>> {
     for key in self.keys.iter() {
       self
         .fields
         .get_mut(key)
-        .expect("Unknown property in property ref")
+        .ok_or(ParserError::new_boxed("Unknown property in property ref"))?
         .set_as_key()
     }
     let entity_fields = self
@@ -140,15 +160,17 @@ impl Parser {
     self.entity_name.clear();
     self.fields.clear();
     self.fields_order.clear();
+    Ok(())
   }
 
-  fn on_property_close(&mut self) {
-    let field = Field::from_odata(&self.field_name, &self.field_type, &self.field_attributes);
+  fn on_property_close(&mut self) -> Result<(), Box<dyn Error>> {
+    let field = Field::from_odata(&self.field_name, &self.field_type, &self.field_attributes)?;
     self.fields.insert(self.field_name.clone(), field);
     self.fields_order.push(self.field_name.clone());
     self.field_name.clear();
     self.field_type.clear();
     self.field_attributes.clear();
+    Ok(())
   }
 
   fn on_navigation_property_close(&mut self) {

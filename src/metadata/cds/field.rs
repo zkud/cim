@@ -1,5 +1,7 @@
+use super::super::error::ParserError;
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter, Result};
+use std::error::Error;
+use std::fmt::{Display, Formatter, Result as FMTResult};
 
 #[derive(Clone)]
 pub struct Field {
@@ -9,11 +11,15 @@ pub struct Field {
 }
 
 impl Field {
-  pub fn from_odata(name: &str, odata_type: &str, attributes: &HashMap<String, String>) -> Self {
-    Field::new(
+  pub fn from_odata(
+    name: &str,
+    odata_type: &str,
+    attributes: &HashMap<String, String>,
+  ) -> Result<Self, Box<dyn Error>> {
+    Ok(Field::new(
       name.to_owned(),
-      CDSType::from_odata(odata_type.to_owned(), attributes),
-    )
+      CDSType::from_odata(odata_type.to_owned(), attributes)?,
+    ))
   }
 
   pub fn new_association(name: &str, target: &str) -> Self {
@@ -67,7 +73,7 @@ enum CDSType {
 }
 
 impl Display for CDSType {
-  fn fmt(&self, fmt: &mut Formatter) -> Result {
+  fn fmt(&self, fmt: &mut Formatter) -> FMTResult {
     let type_string = match self {
       CDSType::UUID => String::from("UUID"),
       CDSType::Boolean => String::from("Boolean"),
@@ -95,37 +101,44 @@ impl Display for CDSType {
 }
 
 impl CDSType {
-  fn from_odata(odata_type: String, attributes: &HashMap<String, String>) -> Self {
+  fn from_odata(
+    odata_type: String,
+    attributes: &HashMap<String, String>,
+  ) -> Result<Self, Box<dyn Error>> {
     match odata_type.as_str() {
-      "Edm.Guid" => Self::UUID,
-      "Edm.Boolean" => Self::Boolean,
-      "Edm.Int16" => Self::Integer,
-      "Edm.Int32" => Self::Integer,
-      "Edm.Int64" => Self::Integer64,
+      "Edm.Guid" => Ok(Self::UUID),
+      "Edm.Boolean" => Ok(Self::Boolean),
+      "Edm.Int16" => Ok(Self::Integer),
+      "Edm.Int32" => Ok(Self::Integer),
+      "Edm.Int64" => Ok(Self::Integer64),
       "Edm.Decimal" => {
         let scale = attributes.get("scale").cloned();
         let scale = scale.or(attributes.get("Scale").cloned());
         let precision = attributes.get("precision").cloned();
         let precision = precision.or(attributes.get("Precision").cloned());
         match (scale, precision) {
-          (Some(scale), Some(precision)) => Self::Decimal { scale, precision },
-          _ => panic!("Failed to parse a Decimal type, scale or precision is missing"),
+          (Some(scale), Some(precision)) => Ok(Self::Decimal { scale, precision }),
+          _ => Err(ParserError::new_boxed(
+            "Failed to parse a Decimal type, scale or precision is missing",
+          )),
         }
       }
-      "Edm.Double" => Self::Double,
-      "Edm.Date" => Self::Date,
-      "Edm.TimeOfDay" | "Edm.Time" => Self::Time,
-      "Edm.DateTime" | "Edm.DateTimeOffset" => Self::DateTime,
+      "Edm.Double" => Ok(Self::Double),
+      "Edm.Date" => Ok(Self::Date),
+      "Edm.TimeOfDay" | "Edm.Time" => Ok(Self::Time),
+      "Edm.DateTime" | "Edm.DateTimeOffset" => Ok(Self::DateTime),
       "Edm.String" => {
         let length = attributes.get("MaxLength").cloned();
-        Self::String { length }
+        Ok(Self::String { length })
       }
-      "Edm.Binary" => Self::Binary,
-      "Edm.Single" => Self::Single,
-      "Edm.Byte" => Self::Byte,
-      "Edm.SByte" => Self::SByte,
-      "Edm.Stream" => Self::Stream,
-      _ => panic!("Unknown/Unsupported OData Type '{odata_type}'"),
+      "Edm.Binary" => Ok(Self::Binary),
+      "Edm.Single" => Ok(Self::Single),
+      "Edm.Byte" => Ok(Self::Byte),
+      "Edm.SByte" => Ok(Self::SByte),
+      "Edm.Stream" => Ok(Self::Stream),
+      _ => Err(ParserError::new_boxed(
+        "Unknown/Unsupported OData Type '{odata_type}'",
+      )),
     }
   }
 }
