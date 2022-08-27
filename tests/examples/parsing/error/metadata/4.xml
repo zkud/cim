@@ -27,7 +27,7 @@
 				<Property Name="ObjectID" Type="Edm.String" Nullable="false"
 					sap:label="ObjectID" sap:creatable="false" sap:updatable="false"
 					sap:sortable="false" sap:filterable="false" />
-				<Property Name  ="RelationID" Type="Edm.String" Nullable="false"
+				<Property Type="Edm.String" Nullable="false"
 					sap:label   ="RelationID" sap:creatable="false" sap:updatable="false"
 					sap:sortable="false" sap:filterable="false" />
 				<Property Name  ="ParentObjectID" Type="Edm.String" Nullable="false"

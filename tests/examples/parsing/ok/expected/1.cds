@@ -1,6 +1,7 @@
 entity Tests {
   key ID: String;
   ParentObjectID: String;
+  ParentObjectIDLimited: String(10);
   Relationships: Association to ToRole_Relationship on ...;
   WorkingTimes: Association to ToRole_WorkingTime on ...;
 }

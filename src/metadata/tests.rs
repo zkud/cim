@@ -4,6 +4,7 @@ use super::super::xml_tags::types::TagEvent;
 use super::super::xml_tags::types::TagParser;
 use super::Parser;
 use std::collections::HashMap;
+use std::error::Error;
 
 macro_rules! open_tag {
     ($tag_type: expr, $(($key: expr, $val: expr)),*) => {
@@ -394,7 +395,7 @@ fn with_usual_input_it_generates_valid_cds() {
     close_tag!(Tag::EntityType),
     close_tag!(Tag::Schema),
   ];
-  let cds = parse(tags);
+  let cds = parse(tags).unwrap();
   assert_eq!(
     cds,
     "entity Tests {
@@ -470,7 +471,6 @@ entity Advertisement {
 }
 
 #[test]
-#[should_panic]
 fn with_missing_decimal_scale_or_precision_it_panics() {
   let tags = vec![
     open_tag!(Tag::Schema, ("Namespace", "test")),
@@ -500,11 +500,16 @@ fn with_missing_decimal_scale_or_precision_it_panics() {
     close_tag!(Tag::EntityType),
     close_tag!(Tag::Schema),
   ];
-  parse(tags);
+  let result = parse(tags);
+  if let Err(error) = result {
+    assert_eq!(error.to_string(), "Metadata Parser Error, reason: Failed to parse a Decimal type, scale or precision is missing");
+    return;
+  }
+  panic!("Missed a parsing error")
 }
 
-fn parse(tag_events: Vec<TagEvent>) -> String {
-  let tag_events: Vec<Result<TagEvent, TagError>> = tag_events.into_iter().map(|e| Ok(e)).collect();
+fn parse(tag_events: Vec<TagEvent>) -> Result<String, Box<dyn Error>> {
+  let tag_events: Vec<Result<TagEvent, TagError>> = tag_events.into_iter().map(Ok).collect();
   let mut parser = build_parser(tag_events);
   parser.parse()
 }

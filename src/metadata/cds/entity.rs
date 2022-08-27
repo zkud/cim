@@ -6,7 +6,7 @@ pub struct Entity {
 }
 
 impl Entity {
-  pub fn new(name: &str, fields: &Vec<Field>) -> Self {
+  pub fn new(name: &str, fields: &[Field]) -> Self {
     Entity {
       name: name.to_owned(),
       fields: fields.to_vec(),

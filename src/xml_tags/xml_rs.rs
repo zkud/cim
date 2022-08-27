@@ -4,6 +4,7 @@ use super::types::TagEvent;
 use super::types::TagParser;
 
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use xml::attribute::OwnedAttribute;
@@ -47,18 +48,18 @@ impl XmlTagParser {
     XmlTagParser { tag_parser }
   }
 
-  pub fn from_file(path: String) -> Self {
-    let file = Box::new(File::open(path).unwrap()) as Box<dyn Read>;
-    Self::new(file)
+  pub fn from_file(path: String) -> Result<Self, Box<dyn Error>> {
+    let file = Box::new(File::open(path)?) as Box<dyn Read>;
+    Ok(Self::new(file))
   }
 
-  fn build_open_tag_event(name: String, attributes: &Vec<OwnedAttribute>) -> TagEvent {
+  fn build_open_tag_event(name: String, attributes: &[OwnedAttribute]) -> TagEvent {
     let tag = Self::build_tag(name);
     let attributes = Self::parse_attributes(attributes);
     TagEvent::Open { tag, attributes }
   }
 
-  fn parse_attributes(attributes: &Vec<OwnedAttribute>) -> HashMap<String, String> {
+  fn parse_attributes(attributes: &[OwnedAttribute]) -> HashMap<String, String> {
     let mut attributes_map = HashMap::new();
     for attribute in attributes.iter() {
       let key = attribute.name.local_name.clone();
@@ -84,10 +85,10 @@ impl XmlTagParser {
   }
 
   fn is_supported_tag(name: &str) -> bool {
-    return name == "Schema"
+    name == "Schema"
       || name == "EntityType"
       || name == "Property"
       || name == "PropertyRef"
-      || name == "NavigationProperty";
+      || name == "NavigationProperty"
   }
 }
