@@ -34,13 +34,10 @@ fn with_incorrect_metadata_it_returns_errors() {
 }
 
 #[test]
+#[should_panic]
 fn with_missing_file_it_returns_error() {
   let args = Args {
     path: "./invldpath.xml".to_string(),
   };
-  if let Err(error) = run(args) {
-    assert_eq!(error.to_string(), "No such file or directory (os error 2)");
-    return;
-  }
-  panic!("Missed parsing error");
+  run(args).unwrap();
 }
