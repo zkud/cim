@@ -117,7 +117,7 @@ impl Parser {
       .ok_or(ParserError::new_boxed("Failed to get nav. property's name"))?
       .to_string();
     self.associated_target = attributes
-      .get("Type")
+      .get("ToRole")
       .ok_or(ParserError::new_boxed(
         "Failed to get nav. property's target",
       ))?
