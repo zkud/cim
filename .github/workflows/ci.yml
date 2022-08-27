@@ -25,7 +25,6 @@ jobs:
   test:
     needs:
       - build
-      - test
 
     strategy:
       matrix:
