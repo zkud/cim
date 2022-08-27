@@ -70,7 +70,7 @@ impl Parser {
   ) -> Result<(), Box<dyn Error>> {
     self.schema_name = attributes
       .get("Namespace")
-      .ok_or(ParserError::new_boxed("Failed to get schema name"))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get schema name"))?
       .to_string();
     Ok(())
   }
@@ -81,7 +81,7 @@ impl Parser {
   ) -> Result<(), Box<dyn Error>> {
     self.entity_name = attributes
       .get("Name")
-      .ok_or(ParserError::new_boxed("Failed to get entity's name"))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get entity's name"))?
       .to_string();
     Ok(())
   }
@@ -92,11 +92,11 @@ impl Parser {
   ) -> Result<(), Box<dyn Error>> {
     self.field_name = attributes
       .get("Name")
-      .ok_or(ParserError::new_boxed("Failed to get property's name"))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get property's name"))?
       .to_string();
     self.field_type = attributes
       .get("Type")
-      .ok_or(ParserError::new_boxed("Failed to get property's type"))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get property's type"))?
       .to_string();
     self.field_attributes = attributes.clone();
     Ok(())
@@ -108,13 +108,11 @@ impl Parser {
   ) -> Result<(), Box<dyn Error>> {
     self.field_name = attributes
       .get("Name")
-      .ok_or(ParserError::new_boxed("Failed to get nav. property's name"))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get nav. property's name"))?
       .to_string();
     self.associated_target = attributes
       .get("ToRole")
-      .ok_or(ParserError::new_boxed(
-        "Failed to get nav. property's target",
-      ))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get nav. property's target"))?
       .to_string();
     if !self.schema_name.is_empty() {
       self.associated_target = self
@@ -129,7 +127,7 @@ impl Parser {
   fn on_property_ref(&mut self, attributes: HashMap<String, String>) -> Result<(), Box<dyn Error>> {
     let field_name = attributes
       .get("Name")
-      .ok_or(ParserError::new_boxed("Failed to get property ref's name"))?
+      .ok_or_else(|| ParserError::new_boxed("Failed to get property ref's name"))?
       .to_string();
     self.keys.push(field_name);
     Ok(())
@@ -140,10 +138,10 @@ impl Parser {
       self
         .fields
         .get_mut(key)
-        .ok_or(ParserError::new_boxed("Unknown property in property ref"))?
+        .ok_or_else(|| ParserError::new_boxed("Unknown property in property ref"))?
         .set_as_key()
     }
-    let entity_fields = self
+    let entity_fields: Vec<_> = self
       .fields_order
       .iter()
       .map(|name| self.fields.get(name).unwrap().clone())

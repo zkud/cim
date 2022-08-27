@@ -54,7 +54,7 @@ impl Field {
 
 #[derive(Clone, Debug)]
 enum CDSType {
-  UUID,
+  Uuid,
   Boolean,
   Integer,
   Integer64,
@@ -75,7 +75,7 @@ enum CDSType {
 impl Display for CDSType {
   fn fmt(&self, fmt: &mut Formatter) -> FMTResult {
     let type_string = match self {
-      CDSType::UUID => String::from("UUID"),
+      CDSType::Uuid => String::from("UUID"),
       CDSType::Boolean => String::from("Boolean"),
       CDSType::Integer => String::from("Integer"),
       CDSType::Integer64 => String::from("Integer64"),
@@ -106,16 +106,16 @@ impl CDSType {
     attributes: &HashMap<String, String>,
   ) -> Result<Self, Box<dyn Error>> {
     match odata_type.as_str() {
-      "Edm.Guid" => Ok(Self::UUID),
+      "Edm.Guid" => Ok(Self::Uuid),
       "Edm.Boolean" => Ok(Self::Boolean),
       "Edm.Int16" => Ok(Self::Integer),
       "Edm.Int32" => Ok(Self::Integer),
       "Edm.Int64" => Ok(Self::Integer64),
       "Edm.Decimal" => {
         let scale = attributes.get("scale").cloned();
-        let scale = scale.or(attributes.get("Scale").cloned());
+        let scale = scale.or_else(|| attributes.get("Scale").cloned());
         let precision = attributes.get("precision").cloned();
-        let precision = precision.or(attributes.get("Precision").cloned());
+        let precision = precision.or_else(|| attributes.get("Precision").cloned());
         match (scale, precision) {
           (Some(scale), Some(precision)) => Ok(Self::Decimal { scale, precision }),
           _ => Err(ParserError::new_boxed(

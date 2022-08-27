@@ -53,13 +53,13 @@ impl XmlTagParser {
     Ok(Self::new(file))
   }
 
-  fn build_open_tag_event(name: String, attributes: &Vec<OwnedAttribute>) -> TagEvent {
+  fn build_open_tag_event(name: String, attributes: &[OwnedAttribute]) -> TagEvent {
     let tag = Self::build_tag(name);
     let attributes = Self::parse_attributes(attributes);
     TagEvent::Open { tag, attributes }
   }
 
-  fn parse_attributes(attributes: &Vec<OwnedAttribute>) -> HashMap<String, String> {
+  fn parse_attributes(attributes: &[OwnedAttribute]) -> HashMap<String, String> {
     let mut attributes_map = HashMap::new();
     for attribute in attributes.iter() {
       let key = attribute.name.local_name.clone();
