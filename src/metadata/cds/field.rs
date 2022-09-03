@@ -137,7 +137,7 @@ impl CDSType {
       "Edm.SByte" => Ok(Self::SByte),
       "Edm.Stream" => Ok(Self::Stream),
       _ => Err(ParserError::new_boxed(
-        "Unknown/Unsupported OData Type '{odata_type}'",
+        format!("Unknown/Unsupported OData Type '{odata_type}'"),
       )),
     }
   }

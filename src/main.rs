@@ -5,7 +5,7 @@ use std::process::exit;
 
 fn main() {
   let args = Args::parse();
-  println!("CIM 0.3.5");
+  println!("CIM {}", env!("CARGO_PKG_VERSION"));
   println!("Reading {}...", args.path);
   match run(args) {
     Ok(cds) => {

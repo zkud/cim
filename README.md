@@ -7,7 +7,7 @@ This is a simple CLI program to generate simple and silly CAP CDS implementation
 
 ```console
 foo@bar:~$ cim metadata.xml
-CIM 0.3.5
+CIM 0.3.6
 Reading metadata.xml...
 entity ProjectElemDetail {
   ObjectID: String;
