@@ -17,7 +17,7 @@ fn with_usual_metadata_it_returns_valid_cds() {
 
 #[test]
 fn with_incorrect_metadata_it_returns_errors() {
-  for test_index in 1..5 {
+  for test_index in 1..6 {
     let args = Args {
       path: format!("./tests/examples/parsing/error/metadata/{}.xml", test_index),
     };
